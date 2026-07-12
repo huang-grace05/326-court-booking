@@ -7,6 +7,7 @@ Court Booking is a pickleball court reservation app for COMPSCI 326.
 | Name | GitHub Username |
 | --- | --- |
 | Grace Huang | `huang-grace05` |
+| Samantha Jabak | `samanthajabak` |
 | Vedant Naidu | `vizzycode` |
 
 ## Working Agreement
