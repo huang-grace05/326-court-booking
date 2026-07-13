@@ -1,0 +1,25 @@
+{
+  "name": "326-court-booking",
+  "version": "1.0.0",
+  "description": "Court Booking is a pickleball court reservation app for COMPSCI 326.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --check server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huang-grace05/326-court-booking.git"
+  },
+  "keywords": [],
+  "author": "vizzycode",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/huang-grace05/326-court-booking/issues"
+  },
+  "homepage": "https://github.com/huang-grace05/326-court-booking#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
