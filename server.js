@@ -9,6 +9,8 @@ app.get("/", (req, res) => {
     <p>A simple pickleball court reservation app for our COMPSCI 326 project.</p>
     <p>Players will be able to reserve a court spot for a party of 1 to 4 people.</p>
     <p><a href="/courts">View court slots</a></p>
+
+    <p><a href="/reservations">View reservations</a></p>
   `);
 });
 
@@ -21,6 +23,15 @@ app.get("/courts", (req, res) => {
       <li>Players can share a skill level from 1 to 5.</li>
       <li>Managers will be able to review reservation requests later.</li>
     </ul>
+  `);
+});
+
+app.get("/reservations", (req, res) => {
+  res.send(`
+    <h1>Current Reservations</h1>
+    <p>This page will eventually display upcoming pickleball court reservations.</p>
+    <p>Players will be able to view the court, time slot, party size, and skill level.</p>
+    <p><a href="/">Return to home</a></p>
   `);
 });
 
