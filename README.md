@@ -54,3 +54,4 @@ Current routes:
 
 - `GET /` shows the home page.
 - `GET /courts` shows the first court-related page.
+- `GET /players` shows player skill level descriptions.

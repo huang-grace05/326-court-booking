@@ -24,6 +24,19 @@ app.get("/courts", (req, res) => {
   `);
 });
 
+app.get("/players", (req, res) => {
+  res.send(`
+    <h1>Player Skill Levels</h1>
+    <p>Players can list a skill level from 1 to 5 so it's easier to find a good match.</p>
+    <ul>
+      <li>1-2: New to pickleball</li>
+      <li>3: Comfortable with the basics</li>
+      <li>4-5: Experienced player</li>
+    </ul>
+    <p><a href="/">Back home</a></p>
+  `);
+});
+
 app.listen(port, () => {
   console.log(`Court Booking server running at http://localhost:${port}`);
 });
