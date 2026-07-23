@@ -36,7 +36,9 @@ app.get("/players", (req, res) => {
       <li>4-5: Experienced player</li>
     </ul>
     <p><a href="/">Back home</a></p>
-    
+  `);
+});
+
 app.get("/reservations", (req, res) => {
   res.send(`
     <h1>Current Reservations</h1>
