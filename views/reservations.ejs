@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Request a Reservation | Court Booking</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <%- include("partials/header") %>
+
+    <main class="page-shell">
+      <section class="reservation-layout" aria-labelledby="reservation-heading">
+        <div class="reservation-form-panel">
+          <p class="eyebrow">Court request</p>
+          <h1 id="reservation-heading">Request a pickleball court</h1>
+          <p class="intro">
+            Pick a court, time, party size, and skill level. Saved requests stay on this page after refresh.
+          </p>
+
+          <p id="form-message" class="form-message" role="status" aria-live="polite">
+            <% if (error) { %><%= error %><% } %>
+          </p>
+
+          <form id="reservation-form" class="reservation-form" action="/reservations" method="post" novalidate>
+            <div class="field-group">
+              <label for="playerName">Your name</label>
+              <input
+                id="playerName"
+                name="playerName"
+                type="text"
+                autocomplete="name"
+                value="<%= formData.playerName %>"
+              >
+              <p class="field-error" data-error-for="playerName"><%= errors.playerName || "" %></p>
+            </div>
+
+            <div class="field-group">
+              <label for="courtName">Court</label>
+              <select id="courtName" name="courtName">
+                <option value="">Choose a court</option>
+                <% ["North Court", "South Court", "Community Center Court"].forEach((court) => { %>
+                  <option value="<%= court %>" <%= formData.courtName === court ? "selected" : "" %>><%= court %></option>
+                <% }) %>
+              </select>
+              <p class="field-error" data-error-for="courtName"><%= errors.courtName || "" %></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="reservationDate">Date</label>
+                <input
+                  id="reservationDate"
+                  name="reservationDate"
+                  type="date"
+                  value="<%= formData.reservationDate %>"
+                >
+                <p class="field-error" data-error-for="reservationDate"><%= errors.reservationDate || "" %></p>
+              </div>
+
+              <div class="field-group">
+                <label for="reservationTime">Time</label>
+                <input
+                  id="reservationTime"
+                  name="reservationTime"
+                  type="time"
+                  value="<%= formData.reservationTime %>"
+                >
+                <p class="field-error" data-error-for="reservationTime"><%= errors.reservationTime || "" %></p>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="partySize">Party size</label>
+                <select id="partySize" name="partySize">
+                  <option value="">Choose size</option>
+                  <% [1, 2, 3, 4].forEach((size) => { %>
+                    <option value="<%= size %>" <%= String(formData.partySize) === String(size) ? "selected" : "" %>><%= size %></option>
+                  <% }) %>
+                </select>
+                <p class="field-error" data-error-for="partySize"><%= errors.partySize || "" %></p>
+              </div>
+
+              <div class="field-group">
+                <label for="skillLevel">Skill level</label>
+                <select id="skillLevel" name="skillLevel">
+                  <option value="">Choose level</option>
+                  <% [1, 2, 3, 4, 5].forEach((level) => { %>
+                    <option value="<%= level %>" <%= String(formData.skillLevel) === String(level) ? "selected" : "" %>><%= level %></option>
+                  <% }) %>
+                </select>
+                <p class="field-error" data-error-for="skillLevel"><%= errors.skillLevel || "" %></p>
+              </div>
+            </div>
+
+            <button class="primary-button" type="submit">Save reservation request</button>
+          </form>
+        </div>
+
+        <section class="reservation-list-panel" aria-labelledby="saved-reservations-heading">
+          <div class="list-header">
+            <p class="eyebrow">Saved requests</p>
+            <h2 id="saved-reservations-heading">Current reservations</h2>
+          </div>
+
+          <ol id="reservation-list" class="reservation-list">
+            <% if (reservations.length === 0) { %>
+              <li class="empty-state">No reservations saved yet.</li>
+            <% } %>
+
+            <% reservations.forEach((reservation) => { %>
+              <li class="reservation-item" data-reservation-id="<%= reservation.id %>">
+                <div>
+                  <strong><%= reservation.playerName %></strong>
+                  <span><%= reservation.courtName %></span>
+                </div>
+                <dl>
+                  <div>
+                    <dt>Date</dt>
+                    <dd><%= reservation.reservationDate %></dd>
+                  </div>
+                  <div>
+                    <dt>Time</dt>
+                    <dd><%= reservation.reservationTime %></dd>
+                  </div>
+                  <div>
+                    <dt>Party</dt>
+                    <dd><%= reservation.partySize %></dd>
+                  </div>
+                  <div>
+                    <dt>Skill</dt>
+                    <dd><%= reservation.skillLevel %></dd>
+                  </div>
+                </dl>
+              </li>
+            <% }) %>
+          </ol>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>
