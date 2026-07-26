@@ -1,6 +1,7 @@
 import {
   listReservations,
   requestReservation,
+  removeReservation,
   ReservationValidationError,
 } from "../services/reservationService.js";
 
@@ -62,6 +63,15 @@ export async function createReservation(req, res, next) {
       });
     }
 
+    return next(error);
+  }
+}
+
+export async function cancelReservation(req, res, next) {
+  try {
+    await removeReservation(req.params.id);
+    return res.status(204).send();
+  } catch (error) {
     return next(error);
   }
 }

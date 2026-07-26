@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-
 import {
   addReservation,
   getReservations,
+  deleteReservation,
 } from "../repositories/reservationRepository.js";
 
 export class ReservationValidationError extends Error {
@@ -38,6 +38,10 @@ export async function requestReservation(input) {
   };
 
   return addReservation(reservation);
+}
+
+export async function removeReservation(id) {
+  await deleteReservation(id);
 }
 
 function cleanReservationInput(input = {}) {
