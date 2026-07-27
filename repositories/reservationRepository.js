@@ -19,6 +19,12 @@ export async function addReservation(reservation) {
   return reservation;
 }
 
+export async function deleteReservation(id) {
+  const reservations = await readReservations();
+  const updatedReservations = reservations.filter((r) => r.id !== id);
+  await writeReservations(updatedReservations);
+}
+
 async function readReservations() {
   try {
     const fileContents = await readFile(getReservationsFilePath(), "utf8");
