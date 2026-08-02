@@ -57,6 +57,8 @@ Current routes:
 - `GET /players` shows player skill level descriptions.
 - `GET /reservations` shows the reservation request form and saved reservations.
 - `POST /reservations` saves a new reservation request after service-layer validation.
+- `DELETE /reservations/:id` cancels a reservation. Returns `404` if the id doesn't match an existing reservation.
+
 
 ## Sprint 2 Feature: Reservation Requests
 
@@ -72,6 +74,21 @@ To exercise it:
 6. Refresh the page and confirm the reservation is still there.
 
 If required fields are missing, the service returns a validation error and the page shows which fields need to be fixed.
+
+## Sprint 3 Feature: Cancel Reservation with HTMX Now, canceling a reservation doesn't require a complete page reload. Every reservation in the list has a Cancel button that is wired with HTMX (hx-delete, hx-target, hx-swap). When this button is clicked, a delete request is sent and only that reservation's row is removed from the page; a JavaScript fetch call is not necessary. Additionally, this resolves an issue that caused canceling a reservation ID that didn't previously exist to return 204 as if it had been successful. Now, it returns 404 correctly. 
+
+To validate:
+
+1. Run the app with npm start.
+
+ 2. Open http://localhost:3000/reservations.
+
+ 3. Click "Cancel" on any existing reservation. 
+
+4. Verify the dialog and make sure the reservation removes from the list without requiring a page reload. 
+
+5. Use the form to add a new reservation, then click "Cancel" on it as well to ensure that reservations added after the site loads behave in the same way.
+
 
 ## System Diagram
 
@@ -120,4 +137,27 @@ JSON response back to public/app.js
   |
   v
 Rendered reservation appears on /reservations
+
+Browser (cancel button)
+  |
+  | hx-delete DELETE /reservations/:id
+  v
+routes/reservationRoutes.js
+  |
+  v
+controllers/reservationController.js
+  |
+  | checks whether the reservation was actually removed
+  v
+services/reservationService.js
+  |
+  v
+repositories/reservationRepository.js
+  |
+  | removes the matching reservation, reports whether it existed
+  v
+reservations.json
+  |
+  v
+200 (empty body) removes the row via hx-swap, or 404 if the id didn't exist
 ```
