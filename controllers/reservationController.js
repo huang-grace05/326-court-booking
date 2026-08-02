@@ -69,13 +69,24 @@ export async function createReservation(req, res, next) {
 
 export async function cancelReservation(req, res, next) {
   try {
-    await removeReservation(req.params.id);
-    return res.status(204).send();
+    const wasRemoved = await removeReservation(req.params.id);
+
+    if (!wasRemoved) {
+      if (wantsJson(req)) {
+        return res.status(404).json({ message: "Reservation not found." });
+      }
+      return res.status(404).send("Reservation not found.");
+    }
+
+    return res.status(200).send("");
   } catch (error) {
     return next(error);
   }
 }
 
 function wantsJson(req) {
+  if (req.get("HX-Request") === "true") {
+    return false;
+  }
   return req.is("application/json") || req.accepts(["json", "html"]) === "json";
 }

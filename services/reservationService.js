@@ -41,7 +41,7 @@ export async function requestReservation(input) {
 }
 
 export async function removeReservation(id) {
-  await deleteReservation(id);
+  return deleteReservation(id);
 }
 
 function cleanReservationInput(input = {}) {

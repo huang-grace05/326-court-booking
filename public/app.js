@@ -103,7 +103,17 @@ function createReservationItem(reservation) {
     details.append(group);
   });
 
-  item.append(heading, details);
+  const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.className = "cancel-button";
+    cancelButton.textContent = "Cancel";
+    cancelButton.setAttribute("hx-delete", `/reservations/${reservation.id}`);
+    cancelButton.setAttribute("hx-target", "closest li");
+    cancelButton.setAttribute("hx-swap", "outerHTML");
+    cancelButton.setAttribute("hx-confirm", "Cancel this reservation?");
 
-  return item;
-}
+    item.append(heading, details, cancelButton);
+    htmx.process(item);
+
+    return item;
+  }

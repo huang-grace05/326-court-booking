@@ -22,7 +22,13 @@ export async function addReservation(reservation) {
 export async function deleteReservation(id) {
   const reservations = await readReservations();
   const updatedReservations = reservations.filter((r) => r.id !== id);
-  await writeReservations(updatedReservations);
+  const wasRemoved = updatedReservations.length !== reservations.length;
+
+  if (wasRemoved) {
+    await writeReservations(updatedReservations);
+  }
+
+  return wasRemoved;
 }
 
 async function readReservations() {

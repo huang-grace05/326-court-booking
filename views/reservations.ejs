@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Request a Reservation | Court Booking</title>
     <link rel="stylesheet" href="/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script type="module" src="/app.js"></script>
   </head>
   <body>
@@ -134,6 +135,14 @@
                     <dd><%= reservation.skillLevel %></dd>
                   </div>
                 </dl>
+                <button
+                  type="button"
+                  class="cancel-button"
+                  hx-delete="/reservations/<%= reservation.id %>"
+                  hx-target="closest li"
+                  hx-swap="outerHTML"
+                  hx-confirm="Cancel this reservation?"
+                >Cancel</button>
               </li>
             <% }) %>
           </ol>
