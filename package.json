@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
-    "check": "node --check server.js && node --check app.js && node --check public/app.js"
+    "check": "node --check server.js && node --check app.js && node --check public/app.js",
+    "styles:build": "npx @tailwindcss/cli -i ./src/input.css -o ./public/style.css --minify",
+    "styles:watch": "npx @tailwindcss/cli -i ./src/input.css -o ./public/style.css --watch"
   },
   "repository": {
     "type": "git",
@@ -26,6 +28,8 @@
     "mongoose": "^9.9.1"
   },
   "devDependencies": {
-    "jest": "^30.4.2"
+    "@tailwindcss/cli": "^4.3.3",
+    "jest": "^30.4.2",
+    "tailwindcss": "^4.3.3"
   }
 }
