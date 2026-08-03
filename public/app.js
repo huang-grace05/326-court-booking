@@ -1,92 +1,25 @@
-const reservationForm = document.querySelector("#reservation-form");
-const formMessage = document.querySelector("#form-message");
-const reservationList = document.querySelector("#reservation-list");
-
-if (reservationForm) {
-  reservationForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    clearErrors();
-    setFormMessage("Saving reservation request...");
-
-    const formData = new FormData(reservationForm);
-    const payload = Object.fromEntries(formData.entries());
-
-    try {
-      const response = await fetch("/reservations", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        showErrors(result.errors || {});
-        setFormMessage(result.message || "Please fix the form and try again.");
-        return;
-      }
-
-      prependReservation(result.reservation);
-      reservationForm.reset();
-      setFormMessage("Reservation request saved.");
-    } catch (error) {
-      setFormMessage("The reservation could not be saved. Please try again.");
-    }
-  });
-}
-
-function clearErrors() {
-  document.querySelectorAll("[data-error-for]").forEach((errorNode) => {
-    errorNode.textContent = "";
-  });
-}
-
-function showErrors(errors) {
-  Object.entries(errors).forEach(([fieldName, message]) => {
-    const errorNode = document.querySelector(`[data-error-for="${fieldName}"]`);
-    if (errorNode) {
-      errorNode.textContent = message;
-    }
-  });
-}
-
-function setFormMessage(message) {
-  if (formMessage) {
-    formMessage.textContent = message;
-  }
-}
-
-function prependReservation(reservation) {
-  if (!reservationList) {
-    return;
-  }
-
-  const emptyState = reservationList.querySelector(".empty-state");
-  if (emptyState) {
-    emptyState.remove();
-  }
-
-  reservationList.prepend(createReservationItem(reservation));
-}
-
 function createReservationItem(reservation) {
   const item = document.createElement("li");
-  item.className = "reservation-item";
+  item.className =
+    "reservation-item rounded-xl border border-slate-200 bg-slate-50 p-5 transition hover:border-emerald-300 hover:shadow-sm";
   item.dataset.reservationId = reservation.id;
 
   const heading = document.createElement("div");
-  const playerName = document.createElement("strong");
-  const courtName = document.createElement("span");
+  heading.className = "flex flex-col gap-1";
 
+  const playerName = document.createElement("strong");
+  playerName.className = "text-lg text-slate-900";
   playerName.textContent = reservation.playerName;
+
+  const courtName = document.createElement("span");
+  courtName.className = "font-medium text-emerald-700";
   courtName.textContent = reservation.courtName;
 
   heading.append(playerName, courtName);
 
   const details = document.createElement("dl");
+  details.className = "mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4";
+
   [
     ["Date", reservation.reservationDate],
     ["Time", reservation.reservationTime],
@@ -94,26 +27,35 @@ function createReservationItem(reservation) {
     ["Skill", reservation.skillLevel],
   ].forEach(([label, value]) => {
     const group = document.createElement("div");
-    const term = document.createElement("dt");
-    const description = document.createElement("dd");
+    group.className = "rounded-lg bg-white p-3";
 
+    const term = document.createElement("dt");
+    term.className = "font-semibold text-slate-500";
     term.textContent = label;
+
+    const description = document.createElement("dd");
+    description.className = "mt-1 text-slate-900";
     description.textContent = value;
+
     group.append(term, description);
     details.append(group);
   });
 
   const cancelButton = document.createElement("button");
-    cancelButton.type = "button";
-    cancelButton.className = "cancel-button";
-    cancelButton.textContent = "Cancel";
-    cancelButton.setAttribute("hx-delete", `/reservations/${reservation.id}`);
-    cancelButton.setAttribute("hx-target", "closest li");
-    cancelButton.setAttribute("hx-swap", "outerHTML");
-    cancelButton.setAttribute("hx-confirm", "Cancel this reservation?");
+  cancelButton.type = "button";
+  cancelButton.className =
+    "mt-4 w-full rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 transition hover:border-red-600 hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:w-auto";
+  cancelButton.textContent = "Cancel";
+  cancelButton.setAttribute(
+    "hx-delete",
+    `/reservations/${reservation.id}`,
+  );
+  cancelButton.setAttribute("hx-target", "closest li");
+  cancelButton.setAttribute("hx-swap", "outerHTML");
+  cancelButton.setAttribute("hx-confirm", "Cancel this reservation?");
 
-    item.append(heading, details, cancelButton);
-    htmx.process(item);
+  item.append(heading, details, cancelButton);
+  htmx.process(item);
 
-    return item;
-  }
+  return item;
+}

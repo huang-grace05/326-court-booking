@@ -1,8 +1,39 @@
-<header class="site-header">
-  <a class="brand" href="/">Court Booking</a>
-  <nav class="site-nav" aria-label="Main navigation">
-    <a href="/courts">Courts</a>
-    <a href="/reservations">Reservations</a>
-    <a href="/players">Players</a>
-  </nav>
+<header class="border-b border-emerald-800 bg-emerald-700 text-white shadow-sm">
+  <div
+    class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
+  >
+    <a
+      class="text-2xl font-bold tracking-tight transition hover:text-emerald-100"
+      href="/"
+    >
+      Court Booking
+    </a>
+
+    <nav
+      class="flex flex-wrap gap-2 text-sm font-medium sm:text-base"
+      aria-label="Main navigation"
+    >
+      <a
+        class="rounded-lg px-3 py-2 transition hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-white"
+        href="/courts"
+      >
+        Courts
+      </a>
+
+      <a
+        class="rounded-lg bg-emerald-800 px-3 py-2 transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-white"
+        href="/reservations"
+        aria-current="page"
+      >
+        Reservations
+      </a>
+
+      <a
+        class="rounded-lg px-3 py-2 transition hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-white"
+        href="/players"
+      >
+        Players
+      </a>
+    </nav>
+  </div>
 </header>
