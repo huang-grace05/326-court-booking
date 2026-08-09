@@ -38,9 +38,16 @@ This project currently has an Express server with a home page, court information
    npm install
    ```
 
-3. Start MongoDB locally, or set `MONGODB_URI` to your MongoDB connection string. The local default is `mongodb://127.0.0.1:27017/court-booking`.
+3. Copy the environment template and replace the session secret with a random value:
 
-4. Start the server:
+   ```bash
+   cp .env.example .env
+   openssl rand -hex 32
+   ```
+
+   Put the generated value in `SESSION_SECRET`. `MONGODB_URI` can keep the local default if MongoDB is running on your computer. `ADMIN_EMAILS` is a comma-separated allowlist of accounts that should receive the admin role when they sign up.
+
+4. Start MongoDB, then start the server:
 
    ```bash
    npm start
@@ -57,9 +64,12 @@ Current routes:
 - `GET /` shows the home page.
 - `GET /courts` shows the first court-related page.
 - `GET /players` shows player skill level descriptions.
-- `GET /reservations` shows the reservation request form and saved reservations.
-- `POST /reservations` saves a new reservation request after service-layer validation.
-- `DELETE /reservations/:id` cancels a reservation. Returns `404` if the id doesn't match an existing reservation.
+- `GET /signup` and `POST /signup` create an account.
+- `GET /login` and `POST /login` start a signed session.
+- `POST /logout` ends the current session.
+- `GET /reservations` shows the reservation request form and saved reservations after login.
+- `POST /reservations` saves a new reservation owned by the logged-in user.
+- `DELETE /reservations/:id` lets the reservation owner or an admin cancel it. It returns `403` for a logged-in non-owner and `404` when the reservation does not exist.
 
 
 ## Sprint 2 Feature: Reservation Requests
@@ -103,85 +113,75 @@ Canceling a reservation no longer reloads the page. Each Cancel button uses `hx-
 
 To see it, open `http://localhost:3000/reservations`, create a reservation, and click Cancel. The confirmation appears and the row disappears without a full reload.
 
+## Sprint 4 Authentication and Authorization
+
+### Session authentication
+
+Signup and login use `bcrypt` password hashes with 12 salt rounds. Plain-text passwords are never written to MongoDB or copied into the session. `express-session` signs an HTTP-only, same-site cookie, while `connect-mongo` stores the session itself in MongoDB. Production cookies are also marked secure.
+
+Every new account receives a role on the server. The signup form has no role field. Most accounts become `member`; an email listed in the server-controlled `ADMIN_EMAILS` environment variable becomes `admin`. This makes the role deliberate without trusting browser input.
+
+To try both roles:
+
+1. Put `admin@example.com` in `ADMIN_EMAILS` and restart the server.
+2. Open `/signup` and create a normal member with a different email.
+3. Log out, then sign up with `admin@example.com` to create the admin.
+4. Use `/login` to return to either account. The reservation header shows the active name and role.
+
+### Reservation authorization
+
+Reservation routes use `requireLogin` for the first question: is anyone logged in? Cancellation uses the service layer for the resource-aware question. `removeReservation` loads the record first, then its `isOwnerOrAdmin` check compares the reservation's `ownerId` with the session user or allows the `admin` role. A logged-in member trying to cancel someone else's reservation receives `403 Forbidden`; a missing reservation still receives `404 Not Found`.
+
+To verify the rule, create a reservation as one member, log in as a different member, and try its Cancel button. The reservation stays in place and the response is `403`. Log in as the owner or admin and the same cancellation succeeds.
+
 ## System Diagram
 
 ```text
 Browser
   |
-  | GET /reservations
-  v
-routes/reservationRoutes.js
+  +-- GET/POST /signup or /login
+  |     |
+  |     v
+  |   routes/authRoutes.js (rate-limited account writes)
+  |     |
+  |     v
+  |   controllers/authController.js
+  |     |
+  |     +-- services/authService.js
+  |     |     | bcrypt hash/compare and server-assigned role
+  |     |     v
+  |     |   repositories/usersRepository.js
+  |     |     v
+  |     |   User model -> MongoDB users collection
+  |     |
+  |     +-- express-session signed cookie
+  |           v
+  |         connect-mongo -> MongoDB sessions collection
   |
-  v
-controllers/reservationController.js
-  |
-  v
-services/reservationService.js
-  |
-  v
-repositories/reservationRepository.js
-  |
-  | Mongoose per-record CRUD
-  v
-MongoDB reservations collection
+  +-- GET/POST/DELETE /reservations
+        |
+        v
+      routes/reservationRoutes.js
+        | requireLogin: is a user logged in?
+        v
+      controllers/reservationController.js
+        |
+        v
+      services/reservationService.js
+        | validates reservation input
+        | loads the requested reservation
+        | isOwnerOrAdmin: may this user cancel this record?
+        v
+      repositories/reservationRepository.js
+        | Mongoose per-record CRUD with ownerId
+        v
+      Reservation model -> MongoDB reservations collection
 
-Browser form
+Jest service, middleware, and route tests
   |
-  | fetch POST /reservations
+  +-- auth hashing, public user output, and server-assigned roles
+  +-- requireLogin redirect and signed session cookie
+  +-- owner success, admin success, non-owner 403, and missing record 404
   v
-routes/reservationRoutes.js
-  |
-  v
-controllers/reservationController.js
-  |
-  | turns req.body into a service call
-  v
-services/reservationService.js
-  |
-  | validates required fields, party size, and skill level
-  v
-repositories/reservationRepository.js
-  |
-  | creates one Mongoose document
-  v
-MongoDB reservations collection
-  |
-  v
-JSON response back to public/app.js
-  |
-  v
-Rendered reservation appears on /reservations
-
-Browser (cancel button)
-  |
-  | hx-delete DELETE /reservations/:id
-  v
-routes/reservationRoutes.js
-  |
-  v
-controllers/reservationController.js
-  |
-  | checks whether the reservation was actually removed
-  v
-services/reservationService.js
-  |
-  v
-repositories/reservationRepository.js
-  |
-  | removes the matching Mongoose document, reports whether it existed
-  v
-MongoDB reservations collection
-  |
-  v
-200 (empty body) removes the row via hx-swap, or 404 if the id didn't exist
-
-__tests__/reservationService.test.js
-  |
-  | Jest exercises every service business rule
-  v
-services/reservationService.js
-  |
-  | jest.unstable_mockModule replaces the repository
-  v
-Mock repository (no MongoDB connection)
+Mock repositories / in-memory test session store (no MongoDB connection)
 ```
