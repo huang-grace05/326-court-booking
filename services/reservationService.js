@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import {
   addReservation,
   getReservations,
+  getReservationById,
   deleteReservation,
 } from "../repositories/reservationRepository.js";
 
@@ -13,11 +14,19 @@ export class ReservationValidationError extends Error {
   }
 }
 
+export class ReservationAuthorizationError extends Error {
+  constructor() {
+    super("You can only cancel your own reservations.");
+    this.name = "ReservationAuthorizationError";
+    this.statusCode = 403;
+  }
+}
+
 export async function listReservations() {
   return getReservations();
 }
 
-export async function requestReservation(input) {
+export async function requestReservation(input, currentUser) {
   const cleaned = cleanReservationInput(input);
   const errors = validateReservation(cleaned);
 
@@ -33,6 +42,7 @@ export async function requestReservation(input) {
     reservationTime: cleaned.reservationTime,
     partySize: Number(cleaned.partySize),
     skillLevel: Number(cleaned.skillLevel),
+    ownerId: currentUser.id,
     status: "requested",
     createdAt: new Date().toISOString(),
   };
@@ -40,8 +50,24 @@ export async function requestReservation(input) {
   return addReservation(reservation);
 }
 
-export async function removeReservation(id) {
+export async function removeReservation(id, currentUser) {
+  const reservation = await getReservationById(id);
+
+  if (!reservation) {
+    return false;
+  }
+
+  if (!isOwnerOrAdmin(reservation, currentUser)) {
+    throw new ReservationAuthorizationError();
+  }
+
   return deleteReservation(id);
+}
+
+function isOwnerOrAdmin(reservation, currentUser) {
+  return (
+    currentUser?.role === "admin" || reservation.ownerId === currentUser?.id
+  );
 }
 
 function cleanReservationInput(input = {}) {

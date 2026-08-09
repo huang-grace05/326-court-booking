@@ -8,6 +8,11 @@ const reservationSchema = new mongoose.Schema(
     reservationTime: { type: String, required: true },
     partySize: { type: Number, required: true, min: 1, max: 4 },
     skillLevel: { type: Number, required: true, min: 1, max: 5 },
+    ownerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     status: {
       type: String,
       enum: ["requested", "confirmed", "cancelled"],
@@ -65,10 +70,15 @@ export async function removeById(id) {
 // These names keep the service layer unchanged while the repository moves to
 // the per-record CRUD interface used by MongoDB.
 export const getReservations = getAll;
+export const getReservationById = findById;
 export const addReservation = create;
 export const deleteReservation = removeById;
 
 function toClientReservation(reservation) {
   const { _id, __v, ...fields } = reservation;
-  return { id: _id.toString(), ...fields };
+  return {
+    id: _id.toString(),
+    ...fields,
+    ownerId: reservation.ownerId?.toString(),
+  };
 }
