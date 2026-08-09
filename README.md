@@ -45,7 +45,7 @@ This project currently has an Express server with a home page, court information
    openssl rand -hex 32
    ```
 
-   Put the generated value in `SESSION_SECRET`. `MONGODB_URI` can keep the local default if MongoDB is running on your computer. `ADMIN_EMAILS` is a comma-separated allowlist of accounts that should receive the admin role when they sign up.
+   Put the generated value in `SESSION_SECRET`. `MONGODB_URI` can keep the local default if MongoDB is running on your computer. The committed `change-me` value is intentionally too short for production and must never be used as a real secret.
 
 4. Start MongoDB, then start the server:
 
@@ -97,15 +97,24 @@ To see it, start MongoDB, run `npm start`, and use `GET /reservations`, `POST /r
 
 MongoDB now supplies the client-facing reservation id. The EJS view and browser JavaScript already read `reservation.id`, so the repository converts Mongoose's `_id` to that same property. This is the one id exception from the file repository: ids are real MongoDB object ids now instead of UUIDs stored in the JSON file.
 
-### Jest service tests
+### Automated tests
 
-`__tests__/reservationService.test.js` covers every service validation rule: all required fields, party sizes from 1 through 4, and skill levels from 1 through 5. It also covers valid input cleaning, listing, and removal. The repository is mocked with `jest.unstable_mockModule`, so the tests never connect to MongoDB or write real data.
+The Jest suites cover reservation validation, authentication, route protection, and owner/admin authorization with mocked repositories and an in-memory test session store. A separate Playwright smoke test uses real Chromium, MongoDB persistence, and Mongo-backed sessions to exercise member signup, login/logout, reservation ownership, a non-owner `403`, and a server-provisioned admin deletion.
 
-Run the suite with:
+Run the fast suite with:
 
 ```bash
 npm test
 ```
+
+With MongoDB running, install Chromium once and run the full browser flow with:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+The browser test only clears test data from the dedicated `court-booking-e2e` database and refuses to clear data from a database whose name does not end in `-e2e`. GitHub Actions repeats the syntax check, Jest suite, MongoDB-backed browser test, and dependency audit for every pull request into `main` and every push to `main`.
 
 ### HTMX cancellation
 
@@ -119,14 +128,23 @@ To see it, open `http://localhost:3000/reservations`, create a reservation, and 
 
 Signup and login use `bcrypt` password hashes with 12 salt rounds. Plain-text passwords are never written to MongoDB or copied into the session. `express-session` signs an HTTP-only, same-site cookie, while `connect-mongo` stores the session itself in MongoDB. Production cookies are also marked secure.
 
-Every new account receives a role on the server. The signup form has no role field. Most accounts become `member`; an email listed in the server-controlled `ADMIN_EMAILS` environment variable becomes `admin`. This makes the role deliberate without trusting browser input.
+Every account created through the public signup form becomes a `member`. The form has no role field, and an email address alone can never grant admin access. Admin accounts are created separately with the server-side `npm run admin:create` command, so elevated access cannot be claimed through public signup.
 
 To try both roles:
 
-1. Put `admin@example.com` in `ADMIN_EMAILS` and restart the server.
-2. Open `/signup` and create a normal member with a different email.
-3. Log out, then sign up with `admin@example.com` to create the admin.
-4. Use `/login` to return to either account. The reservation header shows the active name and role.
+1. Open `/signup` and create a normal member.
+2. In a separate terminal, set `ADMIN_NAME` and `ADMIN_EMAIL`, then read a password without echoing it and run the one-time provisioning command:
+
+   ```bash
+   export ADMIN_NAME="Court Admin"
+   export ADMIN_EMAIL="admin@example.com"
+   read -s ADMIN_PASSWORD
+   export ADMIN_PASSWORD
+   npm run admin:create
+   unset ADMIN_PASSWORD
+   ```
+
+3. Use `/login` to switch between the member and the provisioned admin. The reservation header shows the active name and role.
 
 ### Reservation authorization
 
@@ -148,7 +166,7 @@ Browser
   |   controllers/authController.js
   |     |
   |     +-- services/authService.js
-  |     |     | bcrypt hash/compare and server-assigned role
+  |     |     | bcrypt hash/compare and member-only public signup
   |     |     v
   |     |   repositories/usersRepository.js
   |     |     v
@@ -157,6 +175,11 @@ Browser
   |     +-- express-session signed cookie
   |           v
   |         connect-mongo -> MongoDB sessions collection
+  |
+  +-- npm run admin:create
+  |     | server-only admin provisioning (no public route)
+  |     v
+  |   services/authService.js -> users repository -> User model
   |
   +-- GET/POST/DELETE /reservations
         |
@@ -184,4 +207,6 @@ Jest service, middleware, and route tests
   +-- owner success, admin success, non-owner 403, and missing record 404
   v
 Mock repositories / in-memory test session store (no MongoDB connection)
+
+Playwright browser smoke test -> real Chromium -> MongoDB E2E database
 ```

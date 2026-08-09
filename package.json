@@ -5,8 +5,10 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
-    "check": "node --check server.js && node --check app.js && node --check public/app.js",
+    "admin:create": "node scripts/provisionAdmin.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --testPathIgnorePatterns=/e2e/",
+    "test:e2e": "playwright test",
+    "check": "node --check server.js && node --check app.js && node --check public/app.js && node --check scripts/provisionAdmin.js && node --check playwright.config.js && node --check e2e/auth-authorization.spec.js",
     "styles:build": "npx @tailwindcss/cli -i ./src/input.css -o ./public/style.css --minify",
     "styles:watch": "npx @tailwindcss/cli -i ./src/input.css -o ./public/style.css --watch"
   },
@@ -34,6 +36,7 @@
     "mongoose": "^9.9.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/cli": "^4.3.3",
     "jest": "^30.4.2",
     "supertest": "^7.2.2",
