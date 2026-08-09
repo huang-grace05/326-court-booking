@@ -11,6 +11,7 @@ jest.unstable_mockModule("../repositories/usersRepository.js", () => ({
 
 const {
   authenticateUser,
+  provisionAdmin,
   registerUser,
   AuthCredentialsError,
   AuthValidationError,
@@ -52,19 +53,43 @@ test("registers a member with a bcrypt hash and never trusts a submitted role", 
   expect(user).not.toHaveProperty("passwordHash");
 });
 
-test("assigns admin only when the email is on the server-side allowlist", async () => {
+test("never assigns admin through public signup, even for an allowlisted email", async () => {
   mockFindUserByEmail.mockResolvedValue(null);
-  mockCreateUser.mockImplementation(async (user) => ({ id: "admin-1", ...user }));
+  mockCreateUser.mockImplementation(async (user) => ({ id: "user-1", ...user }));
 
   const user = await registerUser(
-    { ...signupInput, email: "ADMIN@example.com", role: "member" },
+    { ...signupInput, email: "ADMIN@example.com", role: "admin" },
     { adminEmails: "admin@example.com" },
   );
 
   expect(mockCreateUser).toHaveBeenCalledWith(
-    expect.objectContaining({ email: "admin@example.com", role: "admin" }),
+    expect.objectContaining({ email: "admin@example.com", role: "member" }),
   );
-  expect(user.role).toBe("admin");
+  expect(user.role).toBe("member");
+});
+
+test("provisions an admin only through the server-side admin function", async () => {
+  mockFindUserByEmail.mockResolvedValue(null);
+  mockCreateUser.mockImplementation(async (user) => ({ id: "admin-1", ...user }));
+
+  const user = await provisionAdmin(signupInput);
+  const savedUser = mockCreateUser.mock.calls[0][0];
+
+  expect(savedUser).toMatchObject({
+    name: "Vedant Naidu",
+    email: "vedant@example.com",
+    role: "admin",
+  });
+  expect(savedUser.passwordHash).not.toBe(signupInput.password);
+  await expect(
+    bcrypt.compare(signupInput.password, savedUser.passwordHash),
+  ).resolves.toBe(true);
+  expect(user).toEqual({
+    id: "admin-1",
+    name: "Vedant Naidu",
+    email: "vedant@example.com",
+    role: "admin",
+  });
 });
 
 test("rejects a duplicate email before hashing or creating another user", async () => {

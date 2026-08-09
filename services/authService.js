@@ -25,7 +25,15 @@ export class AuthCredentialsError extends Error {
   }
 }
 
-export async function registerUser(input = {}, options = {}) {
+export async function registerUser(input = {}) {
+  return createAccount(input, "member");
+}
+
+export async function provisionAdmin(input = {}) {
+  return createAccount(input, "admin");
+}
+
+async function createAccount(input, role) {
   const signup = cleanSignupInput(input);
   const errors = validateSignup(signup);
 
@@ -41,8 +49,6 @@ export async function registerUser(input = {}, options = {}) {
   }
 
   const passwordHash = await bcrypt.hash(signup.password, SALT_ROUNDS);
-  const role = isAdminEmail(signup.email, options.adminEmails) ? "admin" : "member";
-
   try {
     const user = await createUser({
       name: signup.name,
@@ -106,17 +112,6 @@ function validateSignup(signup) {
   }
 
   return errors;
-}
-
-function isAdminEmail(email, adminEmails = process.env.ADMIN_EMAILS ?? "") {
-  const allowlist = Array.isArray(adminEmails)
-    ? adminEmails
-    : String(adminEmails).split(",");
-
-  return allowlist
-    .map((allowedEmail) => String(allowedEmail).trim().toLowerCase())
-    .filter(Boolean)
-    .includes(email);
 }
 
 function toPublicUser(user) {
