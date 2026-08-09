@@ -4,8 +4,9 @@ import {
   showReservationsPage,
   cancelReservation,
 } from "../controllers/reservationController.js";
+import { requireLogin } from "../middleware/requireLogin.js";
 const router = express.Router();
-router.get("/", showReservationsPage);
-router.post("/", createReservation);
-router.delete("/:id", cancelReservation);
+router.get("/", requireLogin, showReservationsPage);
+router.post("/", requireLogin, createReservation);
+router.delete("/:id", requireLogin, cancelReservation);
 export default router;

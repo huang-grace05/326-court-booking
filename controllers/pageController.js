@@ -3,6 +3,7 @@ export function showHomePage(req, res) {
     <h1>Court Booking</h1>
     <p>A simple pickleball court reservation app for our COMPSCI 326 project.</p>
     <p>Players can request a court spot for a party of 1 to 4 people.</p>
+    <p><a href="/signup">Create an account</a> or <a href="/login">log in</a> to manage reservations.</p>
     <p><a href="/courts">View court slots</a></p>
     <p><a href="/reservations">Request a reservation</a></p>
     <p><a href="/players">View player skill levels</a></p>

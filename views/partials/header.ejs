@@ -34,6 +34,21 @@
       >
         Players
       </a>
+
+      <% if (currentUser) { %>
+        <span class="rounded-lg px-3 py-2">
+          <%= currentUser.name %> · <%= currentUser.role %>
+        </span>
+
+        <form action="/logout" method="post">
+          <button
+            class="rounded-lg px-3 py-2 transition hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-white"
+            type="submit"
+          >
+            Log out
+          </button>
+        </form>
+      <% } %>
     </nav>
   </div>
 </header>
