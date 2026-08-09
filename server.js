@@ -12,3 +12,4 @@ try {
   console.error("Could not connect to MongoDB:", error.message);
   process.exitCode = 1;
 }
+// hotfix: correct the startup log message
