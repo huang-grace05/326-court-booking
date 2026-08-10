@@ -2,6 +2,7 @@ import {
   listReservations,
   requestReservation,
   removeReservation,
+  ReservationAuthorizationError,
   ReservationValidationError,
 } from "../services/reservationService.js";
 
@@ -27,7 +28,7 @@ export async function showReservationsPage(req, res) {
 
 export async function createReservation(req, res, next) {
   try {
-    const reservation = await requestReservation(req.body);
+    const reservation = await requestReservation(req.body, req.session.user);
     const reservations = await listReservations();
 
     if (wantsJson(req)) {
@@ -69,7 +70,7 @@ export async function createReservation(req, res, next) {
 
 export async function cancelReservation(req, res, next) {
   try {
-    const wasRemoved = await removeReservation(req.params.id);
+    const wasRemoved = await removeReservation(req.params.id, req.session.user);
 
     if (!wasRemoved) {
       if (wantsJson(req)) {
@@ -80,6 +81,13 @@ export async function cancelReservation(req, res, next) {
 
     return res.status(200).send("");
   } catch (error) {
+    if (error instanceof ReservationAuthorizationError) {
+      if (wantsJson(req)) {
+        return res.status(403).json({ message: error.message });
+      }
+      return res.status(403).send(error.message);
+    }
+
     return next(error);
   }
 }
