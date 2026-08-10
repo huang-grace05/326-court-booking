@@ -153,6 +153,16 @@ Reservation routes use `requireLogin` for the first question: is anyone logged i
 
 To verify the rule, create a reservation as one member, log in as a different member, and try its Cancel button. The reservation stays in place and the response is `403`. Log in as the owner or admin and the same cancellation succeeds.
 
+### Accessibility Audit
+
+The application was reviewed using a manual WCAG AA contrast check and a keyboard-only walkthrough. Three problems were fixed:
+
+- The "Save reservation request" button and the header hover states used a green that measured 3.77:1 with white text, below the 4.5:1 requirement. Both now use a darker color that passes.
+- Canceling a reservation removes the focused button and its row. After cancellation, keyboard focus now moves to the "Current reservations" heading.
+- Signup and login error messages were not connected to their fields. This was fixed by adding `aria-describedby` and `role="alert"`. Each field also has a valid `<label>`.
+
+To verify these changes, navigate through the reservation and authentication forms using only the keyboard. Cancel a reservation and confirm that focus moves to the "Current reservations" heading. Then submit the signup form with an invalid email and confirm that the error is announced.
+
 ### Health Check
 
 `GET /health` is a public health check that deployment platforms and monitoring tools can use to verify that the server is running. It does not require login or a session.

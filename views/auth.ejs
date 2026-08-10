@@ -48,9 +48,10 @@
                 autocomplete="name"
                 value="<%= formData.name %>"
                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                aria-describedby="name-error"
                 required
               >
-              <p class="mt-1 min-h-5 text-sm font-medium text-red-700">
+              <p id="name-error" class="mt-1 min-h-5 text-sm font-medium text-red-700" role="alert">
                 <%= errors.name || "" %>
               </p>
             </div>
@@ -67,9 +68,10 @@
               autocomplete="email"
               value="<%= formData.email %>"
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+              aria-describedby="email-error"
               required
             >
-            <p class="mt-1 min-h-5 text-sm font-medium text-red-700">
+            <p id="email-error" class="mt-1 min-h-5 text-sm font-medium text-red-700" role="alert">
               <%= errors.email || "" %>
             </p>
           </div>
@@ -84,9 +86,10 @@
               type="password"
               autocomplete="<%= mode === "signup" ? "new-password" : "current-password" %>"
               class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+              aria-describedby="password-error"
               required
             >
-            <p class="mt-1 min-h-5 text-sm font-medium text-red-700">
+            <p id="password-error" class="mt-1 min-h-5 text-sm font-medium text-red-700" role="alert">
               <%= errors.password || "" %>
             </p>
           </div>

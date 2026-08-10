@@ -59,3 +59,13 @@ function createReservationItem(reservation) {
 
   return item;
 }
+
+document.body.addEventListener("htmx:afterSwap", (event) => {
+  if (event.detail.requestConfig.verb !== "delete") return;
+
+  const heading = document.querySelector("#saved-reservations-heading");
+  if (!heading) return;
+
+  heading.setAttribute("tabindex", "-1");
+  heading.focus();
+});
