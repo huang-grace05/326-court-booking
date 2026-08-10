@@ -68,6 +68,7 @@ Current routes:
 - `GET /login` and `POST /login` start a signed session.
 - `POST /logout` ends the current session.
 - `GET /reservations` shows the reservation request form and saved reservations after login.
+- `GET /health` returns `{ "status": "ok" }` without requiring authentication.
 - `POST /reservations` saves a new reservation owned by the logged-in user.
 - `DELETE /reservations/:id` lets the reservation owner or an admin cancel it. It returns `403` for a logged-in non-owner and `404` when the reservation does not exist.
 
@@ -151,6 +152,16 @@ To try both roles:
 Reservation routes use `requireLogin` for the first question: is anyone logged in? Cancellation uses the service layer for the resource-aware question. `removeReservation` loads the record first, then its `isOwnerOrAdmin` check compares the reservation's `ownerId` with the session user or allows the `admin` role. A logged-in member trying to cancel someone else's reservation receives `403 Forbidden`; a missing reservation still receives `404 Not Found`.
 
 To verify the rule, create a reservation as one member, log in as a different member, and try its Cancel button. The reservation stays in place and the response is `403`. Log in as the owner or admin and the same cancellation succeeds.
+
+### Health Check
+
+`GET /health` is a public health check that deployment platforms and monitoring tools can use to verify that the server is running. It does not require login or a session.
+
+To test it:
+
+```bash
+curl 'http://localhost:3000/health
+```
 
 ## System Diagram
 
