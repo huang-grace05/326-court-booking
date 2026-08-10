@@ -68,6 +68,7 @@ Current routes:
 - `GET /login` and `POST /login` start a signed session.
 - `POST /logout` ends the current session.
 - `GET /reservations` shows the reservation request form and saved reservations after login.
+- `GET /health` returns `{ "status": "ok" }` without requiring authentication.
 - `POST /reservations` saves a new reservation owned by the logged-in user.
 - `DELETE /reservations/:id` lets the reservation owner or an admin cancel it. It returns `403` for a logged-in non-owner and `404` when the reservation does not exist.
 
@@ -152,11 +153,25 @@ Reservation routes use `requireLogin` for the first question: is anyone logged i
 
 To verify the rule, create a reservation as one member, log in as a different member, and try its Cancel button. The reservation stays in place and the response is `403`. Log in as the owner or admin and the same cancellation succeeds.
 
-### Accessibility audit
+### Accessibility Audit
 
-reviewed using a manual WCAG AA contrast check and a keyboard-only walkthrough. Three problems were fixed: the "Save reservation request" button and the header's hover states had a green that measured 3.77:1 with white text, below the 4.5:1 requirement; both now use a darker hue that passes. Since canceling a reservation eliminates both the focused button and the row, it discreetly drops keyboard focus. Following a cancel, the listener shifts attention to the "Current reservations" heading. A screen reader was unable to identify which signup or login problem messages failed because they were not connected to their fields; this was fixed by adding `aria-describedby` and `role="alert". Each field previously has a valid `<label>`.
+The application was reviewed using a manual WCAG AA contrast check and a keyboard-only walkthrough. Three problems were fixed:
 
-To verify that the error is announced rather than only displayed visually, tab thru the reservation and authentication forms using just the keyboard, cancel a reservation using the keyboard alone and make sure attention rests on the "Current reservations" heading, and submit the signup form with an incorrect email.
+- The "Save reservation request" button and the header hover states used a green that measured 3.77:1 with white text, below the 4.5:1 requirement. Both now use a darker color that passes.
+- Canceling a reservation removes the focused button and its row. After cancellation, keyboard focus now moves to the "Current reservations" heading.
+- Signup and login error messages were not connected to their fields. This was fixed by adding `aria-describedby` and `role="alert"`. Each field also has a valid `<label>`.
+
+To verify these changes, navigate through the reservation and authentication forms using only the keyboard. Cancel a reservation and confirm that focus moves to the "Current reservations" heading. Then submit the signup form with an invalid email and confirm that the error is announced.
+
+### Health Check
+
+`GET /health` is a public health check that deployment platforms and monitoring tools can use to verify that the server is running. It does not require login or a session.
+
+To test it:
+
+```bash
+curl 'http://localhost:3000/health'
+```
 
 ## System Diagram
 
