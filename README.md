@@ -160,7 +160,7 @@ To verify the rule, create a reservation as one member, log in as a different me
 To test it:
 
 ```bash
-curl 'http://localhost:3000/health
+curl 'http://localhost:3000/health'
 ```
 
 ## System Diagram
