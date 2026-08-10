@@ -38,6 +38,9 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(helmet(helmetOptions));
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
