@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Court Slots | Court Booking</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+
+  <body class="min-h-screen bg-slate-100 text-slate-900">
+    <%- include("partials/header") %>
+
+    <main class="mx-auto max-w-2xl px-4 py-10">
+      <h1 class="text-3xl font-bold text-slate-900">Pickleball Court Slots</h1>
+      <p class="mt-3 text-slate-600">This page shows the court options players can request.</p>
+
+      <ul class="mt-4 list-disc pl-5 text-slate-700">
+        <li>North Court</li>
+        <li>South Court</li>
+        <li>Community Center Court</li>
+      </ul>
+
+      <p class="mt-6">
+        <a class="text-emerald-700 underline hover:text-emerald-800" href="/reservations">Request a reservation</a>
+      </p>
+    </main>
+  </body>
+</html>
