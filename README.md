@@ -183,6 +183,20 @@ To test it:
 curl 'http://localhost:3000/health'
 ```
 
+## Sprint 5: Finalizing Deliverable
+
+Sprint 5 has no new features. A real clean-clone test was done, cloning the repository into a fresh directory and following this README exactly as written, and fixed what errors were found:
+
+- The README's MongoDB step didn't say how to start it. It now includes a line Docker command, with a note that it can be skipped if MongoDB is already running locally.
+
+- Added a note that this project has no seed script, since reservations are only created through the signup and reservation forms, and admin accounts come from `npm run admin:create`.
+
+- The Cancel button used to show on every reservation, even ones you didn't own. Clicking it correctly failed with a 403 on the backend, but nothing told the user why, it just silently did nothing. The button is now hidden entirely unless you own the reservation or are an admin.
+
+- The home, courts, and players pages were still raw unstyled HTML sent directly from the controller, left over from before the Tailwind pass . They're now real EJS views styled to match the rest of the app.
+
+To verify: clone the repository fresh into a new directory, follow the Running Locally steps above exactly as written, and confirm the app starts, the full reservation flow works, and `npm test` passes with no changes needed beyond what the README says.
+
 ## System Diagram
 
 ```text
