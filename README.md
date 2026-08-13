@@ -47,17 +47,27 @@ This project currently has an Express server with a home page, court information
 
    Put the generated value in `SESSION_SECRET`. `MONGODB_URI` can keep the local default if MongoDB is running on your computer. The committed `change-me` value is intentionally too short for production and must never be used as a real secret.
 
-4. Start MongoDB, then start the server:
+4. Start MongoDB. If you dont have Docker set up follow https://docs.docker.com/get-started/get-docker/
 
-   ```bash
+Skip this step if MongoDB is already running locally on port 27017
+```bash
+   docker run -d -p 27017:27017 --name local-mongo mongo:8
+```
+
+5. Start the server:
+
+```bash
    npm start
-   ```
-
-5. Open the app in a browser:
+```
+6. Open the app in a browser:
 
    ```text
    http://localhost:3000
    ```
+### Seeding
+
+There is no seed script for this project. Courts and skill-level descriptions are static content within the app, reservations are only created by registered users using the `/reservations` form, and there is no initial data to load. The only exception is admin accounts, which are made without seeding using `npm run admin:create` (see the Sprint 4 Authentication and Authorization section below).
+
 
 Current routes:
 

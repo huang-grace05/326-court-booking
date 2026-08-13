@@ -23,50 +23,53 @@ export async function showReservationsPage(req, res) {
     error: null,
     errors: {},
     formData: emptyForm,
+    currentUser: req.session.user,
   });
 }
 
-export async function createReservation(req, res, next) {
-  try {
-    const reservation = await requestReservation(req.body, req.session.user);
-    const reservations = await listReservations();
+  export async function createReservation(req, res, next) {
+    try {
+      const reservation = await requestReservation(req.body, req.session.user);
+      const reservations = await listReservations();
 
-    if (wantsJson(req)) {
-      return res.status(201).json({
-        message: "Reservation request saved.",
-        reservation,
-        reservations,
-      });
-    }
-
-    return res.status(201).render("reservations", {
-      reservations,
-      error: null,
-      errors: {},
-      formData: emptyForm,
-    });
-  } catch (error) {
-    if (error instanceof ReservationValidationError) {
       if (wantsJson(req)) {
-        return res.status(400).json({
-          message: error.message,
-          errors: error.errors,
+        return res.status(201).json({
+          message: "Reservation request saved.",
+          reservation,
+          reservations,
         });
       }
 
-      const reservations = await listReservations();
-
-      return res.status(400).render("reservations", {
+      return res.status(201).render("reservations", {
         reservations,
-        error: error.message,
-        errors: error.errors,
-        formData: { ...emptyForm, ...req.body },
+        error: null,
+        errors: {},
+        formData: emptyForm,
+        currentUser: req.session.user,
       });
-    }
+    } catch (error) {
+      if (error instanceof ReservationValidationError) {
+        if (wantsJson(req)) {
+          return res.status(400).json({
+            message: error.message,
+            errors: error.errors,
+          });
+        }
 
-    return next(error);
+        const reservations = await listReservations();
+
+        return res.status(400).render("reservations", {
+          reservations,
+          error: error.message,
+          errors: error.errors,
+          formData: { ...emptyForm, ...req.body },
+          currentUser: req.session.user,
+        });
+      }
+
+      return next(error);
+    }
   }
-}
 
 export async function cancelReservation(req, res, next) {
   try {
