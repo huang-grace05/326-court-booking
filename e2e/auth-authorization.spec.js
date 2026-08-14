@@ -68,6 +68,10 @@ test("member ownership and server-provisioned admin work in a real browser", asy
   await expect(
     page.locator(".reservation-item").filter({ hasText: "Owner Member" }),
   ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.locator(".reservation-item").filter({ hasText: "Owner Member" }),
+  ).toHaveCount(1);
 
   await page.getByRole("button", { name: "Log out" }).click();
   await page.getByRole("link", { name: "Sign up" }).click();
