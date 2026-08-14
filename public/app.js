@@ -60,7 +60,7 @@ function createReservationItem(reservation) {
   return item;
 }
 
-document.body.addEventListener("htmx:afterSwap", (event) => {
+document.body.addEventListener("htmx:beforeSwap", (event) => {
   if (event.detail.requestConfig.verb !== "delete") return;
 
   const heading = document.querySelector("#saved-reservations-heading");

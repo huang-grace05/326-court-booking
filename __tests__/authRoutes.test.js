@@ -16,7 +16,12 @@ class MockAuthValidationError extends Error {
 
 class MockAuthCredentialsError extends Error {}
 
-class MockReservationValidationError extends Error {}
+class MockReservationValidationError extends Error {
+  constructor(errors) {
+    super("Please fill out the required reservation fields.");
+    this.errors = errors;
+  }
+}
 
 class MockReservationAuthorizationError extends Error {
   constructor() {
@@ -72,6 +77,17 @@ test("makes signup and login discoverable from the public home page", async () =
   expect(response.text).toContain('href="/login"');
 });
 
+test("marks only the active navigation link as the current page", async () => {
+  const response = await request(app).get("/courts").expect(200);
+
+  expect(response.text).toMatch(
+    /<a[^>]*href="\/courts"[^>]*aria-current="page"[^>]*>/,
+  );
+  expect(response.text).not.toMatch(
+    /<a[^>]*href="\/reservations"[^>]*aria-current="page"[^>]*>/,
+  );
+});
+
 test("logs in with a signed httpOnly same-site session cookie", async () => {
   mockAuthenticateUser.mockResolvedValue({
     id: "user-1",
@@ -96,6 +112,39 @@ test("protects reservation routes with the login gate", async () => {
   const response = await request(app).get("/reservations").expect(303);
 
   expect(response.headers.location).toBe("/login");
+});
+
+test("associates reservation validation errors with their fields", async () => {
+  mockAuthenticateUser.mockResolvedValue({
+    id: "user-1",
+    name: "Vedant Naidu",
+    email: "vedant@example.com",
+    role: "member",
+  });
+  mockRequestReservation.mockRejectedValue(
+    new MockReservationValidationError({ playerName: "Name is required." }),
+  );
+  const agent = request.agent(app);
+
+  await agent
+    .post("/login")
+    .type("form")
+    .send({ email: "vedant@example.com", password: "court-pass-123" })
+    .expect(303);
+
+  const response = await agent
+    .post("/reservations")
+    .set("Accept", "text/html")
+    .type("form")
+    .send({})
+    .expect(400);
+
+  expect(response.text).toMatch(
+    /<input[^>]*id="playerName"[^>]*aria-describedby="playerName-error"[^>]*aria-invalid="true"[^>]*>/,
+  );
+  expect(response.text).toMatch(
+    /<p[^>]*id="playerName-error"[^>]*role="alert"[^>]*>/,
+  );
 });
 
 test("returns 403 when the service rejects a non-owner cancellation", async () => {

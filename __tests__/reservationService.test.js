@@ -80,6 +80,19 @@ test.each(["0", "6", "3.5", "not-a-number"])(
   },
 );
 
+test.each([
+  ["playerName", "a".repeat(101), "Name must be 100 characters or fewer."],
+  ["courtName", "Unlisted Court", "Choose one of the listed courts."],
+  ["reservationDate", "2026-02-30", "Enter a valid date."],
+  ["reservationTime", "25:99", "Enter a valid time."],
+])("rejects invalid %s values", async (field, value, message) => {
+  await expect(
+    requestReservation({ ...validReservation, [field]: value }, memberUser),
+  ).rejects.toMatchObject({ errors: { [field]: message } });
+
+  expect(mockAddReservation).not.toHaveBeenCalled();
+});
+
 test("cleans and converts valid input before creating a reservation", async () => {
   mockAddReservation.mockImplementation(async (reservation) => reservation);
 

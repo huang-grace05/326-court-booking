@@ -14,23 +14,25 @@
       aria-label="Main navigation"
     >
       <a
-        class="rounded-lg px-3 py-2 transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-white"
+        class="rounded-lg px-3 py-2 transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-white <%= currentPath === "/courts" ? "bg-emerald-800" : "" %>"
         href="/courts"
+        <% if (currentPath === "/courts") { %>aria-current="page"<% } %>
       >
         Courts
       </a>
 
       <a
-        class="rounded-lg bg-emerald-800 px-3 py-2 transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-white"
+        class="rounded-lg px-3 py-2 transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-white <%= currentPath === "/reservations" ? "bg-emerald-800" : "" %>"
         href="/reservations"
-        aria-current="page"
+        <% if (currentPath === "/reservations") { %>aria-current="page"<% } %>
       >
         Reservations
       </a>
 
       <a
-        class="rounded-lg px-3 py-2 transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-white"
+        class="rounded-lg px-3 py-2 transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-white <%= currentPath === "/players" ? "bg-emerald-800" : "" %>"
         href="/players"
+        <% if (currentPath === "/players") { %>aria-current="page"<% } %>
       >
         Players
       </a>

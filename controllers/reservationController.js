@@ -23,6 +23,7 @@ export async function showReservationsPage(req, res) {
     error: null,
     errors: {},
     formData: emptyForm,
+    currentUser: req.session.user,
   });
 }
 
@@ -44,6 +45,7 @@ export async function createReservation(req, res, next) {
       error: null,
       errors: {},
       formData: emptyForm,
+      currentUser: req.session.user,
     });
   } catch (error) {
     if (error instanceof ReservationValidationError) {
@@ -61,6 +63,7 @@ export async function createReservation(req, res, next) {
         error: error.message,
         errors: error.errors,
         formData: { ...emptyForm, ...req.body },
+        currentUser: req.session.user,
       });
     }
 
