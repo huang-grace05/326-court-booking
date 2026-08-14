@@ -147,6 +147,40 @@ test("associates reservation validation errors with their fields", async () => {
   );
 });
 
+test("redirects after a successful form submission so refresh does not create a duplicate", async () => {
+  mockAuthenticateUser.mockResolvedValue({
+    id: "user-1",
+    name: "Samantha Member",
+    email: "samantha@example.com",
+    role: "member",
+  });
+  mockRequestReservation.mockResolvedValue({ id: "reservation-1" });
+  const agent = request.agent(app);
+
+  await agent
+    .post("/login")
+    .type("form")
+    .send({ email: "samantha@example.com", password: "member-pass-123" })
+    .expect(303);
+
+  const response = await agent
+    .post("/reservations")
+    .set("Accept", "text/html")
+    .type("form")
+    .send({
+      playerName: "Samantha",
+      courtName: "North Court",
+      reservationDate: "2026-08-20",
+      reservationTime: "17:30",
+      partySize: "4",
+      skillLevel: "3",
+    })
+    .expect(303);
+
+  expect(response.headers.location).toBe("/reservations");
+  expect(mockRequestReservation).toHaveBeenCalledTimes(1);
+});
+
 test("returns 403 when the service rejects a non-owner cancellation", async () => {
   mockAuthenticateUser.mockResolvedValue({
     id: "user-1",

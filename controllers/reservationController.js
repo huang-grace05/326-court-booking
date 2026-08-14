@@ -30,9 +30,10 @@ export async function showReservationsPage(req, res) {
 export async function createReservation(req, res, next) {
   try {
     const reservation = await requestReservation(req.body, req.session.user);
-    const reservations = await listReservations();
 
     if (wantsJson(req)) {
+      const reservations = await listReservations();
+
       return res.status(201).json({
         message: "Reservation request saved.",
         reservation,
@@ -40,13 +41,7 @@ export async function createReservation(req, res, next) {
       });
     }
 
-    return res.status(201).render("reservations", {
-      reservations,
-      error: null,
-      errors: {},
-      formData: emptyForm,
-      currentUser: req.session.user,
-    });
+    return res.redirect(303, "/reservations");
   } catch (error) {
     if (error instanceof ReservationValidationError) {
       if (wantsJson(req)) {
