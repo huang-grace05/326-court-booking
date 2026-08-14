@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Court Booking is a pickleball court reservation app for COMPSCI 326.",
   "main": "server.js",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "start": "node server.js",
     "admin:create": "node scripts/provisionAdmin.js",

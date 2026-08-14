@@ -23,7 +23,13 @@ We want to build a pickleball court reservation app because public courts can ge
 
 ## Running Locally
 
-This project currently has an Express server with a home page, court information, player skill levels, and a reservation request feature.
+### Prerequisites
+
+- Node.js 20.19 or newer (the CI workflow uses Node.js 22)
+- npm
+- MongoDB 8, either installed locally or run with Docker
+
+### First-time setup
 
 1. Clone the repository:
 
@@ -32,10 +38,10 @@ This project currently has an Express server with a home page, court information
    cd 326-court-booking
    ```
 
-2. Install dependencies:
+2. Install the locked dependency versions:
 
    ```bash
-   npm install
+   npm ci
    ```
 
 3. Copy the environment template and replace the session secret with a random value:
@@ -45,34 +51,71 @@ This project currently has an Express server with a home page, court information
    openssl rand -hex 32
    ```
 
-   Put the generated value in `SESSION_SECRET`. `MONGODB_URI` can keep the local default if MongoDB is running on your computer. The committed `change-me` value is intentionally too short for production and must never be used as a real secret.
+   Put the generated value in `SESSION_SECRET`. `MONGODB_URI` can keep the local default if MongoDB is running on your computer. The committed `change-me` value is intentionally unsuitable for production and must never be used as a real secret.
 
-4. Start MongoDB. If you dont have Docker set up follow https://docs.docker.com/get-started/get-docker/
+4. Start MongoDB. Skip this step if MongoDB is already listening on port 27017. With Docker, create the local container the first time with:
 
-Skip this step if MongoDB is already running locally on port 27017
-```bash
+   ```bash
    docker run -d -p 27017:27017 --name local-mongo mongo:8
-```
+   ```
+
+   On later runs, restart that container with:
+
+   ```bash
+   docker start local-mongo
+   ```
+
+   Install Docker first from [Docker's official installation guide](https://docs.docker.com/get-started/get-docker/) if the `docker` command is unavailable.
 
 5. Start the server:
 
-```bash
+   ```bash
    npm start
-```
+   ```
+
 6. Open the app in a browser:
 
    ```text
    http://localhost:3000
    ```
-### Seeding
 
-There is no seed script for this project. Courts and skill-level descriptions are static content within the app, reservations are only created by registered users using the `/reservations` form, and there is no initial data to load. The only exception is admin accounts, which are made without seeding using `npm run admin:create` (see the Sprint 4 Authentication and Authorization section below).
+After the one-time dependency, environment, and MongoDB setup, `npm start` is the only command needed to run the application.
+
+### Environment variables
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `MONGODB_URI` | No | MongoDB connection string. Defaults to `mongodb://127.0.0.1:27017/court-booking`. |
+| `SESSION_SECRET` | Production | Signs session cookies. Production requires at least 32 bytes; use a random value. Development creates a temporary secret if this is omitted. |
+| `PORT` | No | HTTP port. Defaults to `3000`. |
+| `NODE_ENV` | No | Set to `production` behind HTTPS to enable secure cookies, proxy trust, and HSTS. |
+| `ADMIN_NAME` | For `admin:create` | Display name for the server-provisioned admin account. |
+| `ADMIN_EMAIL` | For `admin:create` | Email for the server-provisioned admin account. |
+| `ADMIN_PASSWORD` | For `admin:create` | Password for the server-provisioned admin account. Do not save it in `.env` or commit it. |
+| `E2E_PORT` | No | Port for Playwright's isolated test server. Defaults to `3100`. |
+| `E2E_MONGODB_URI` | No | Dedicated Playwright database. Defaults to `mongodb://127.0.0.1:27017/court-booking-e2e` and must end in `-e2e`. |
+
+### Commands
+
+| Command | Description |
+| --- | --- |
+| `npm start` | Connect to MongoDB and start the application. |
+| `npm test` | Run the full Jest unit, middleware, and route suite. |
+| `npm run test:e2e` | Run the MongoDB-backed Playwright browser test. |
+| `npm run check` | Check server, browser, admin, and Playwright JavaScript syntax. |
+| `npm run styles:build` | Rebuild the committed Tailwind stylesheet. |
+| `npm run styles:watch` | Rebuild the Tailwind stylesheet while editing views. |
+| `npm run admin:create` | Create an admin account from the three `ADMIN_*` variables. |
+
+### Database seeding
+
+There is no seed command because the application has no required database seed data. Courts and skill-level descriptions are static content, members create their own accounts, and reservations are created through the authenticated `/reservations` form. Create an admin explicitly with `npm run admin:create` as documented below; this avoids committing a shared default password.
 
 
 Current routes:
 
 - `GET /` shows the home page.
-- `GET /courts` shows the first court-related page.
+- `GET /courts` lists the available court choices.
 - `GET /players` shows player skill level descriptions.
 - `GET /signup` and `POST /signup` create an account.
 - `GET /login` and `POST /login` start a signed session.
@@ -85,16 +128,17 @@ Current routes:
 
 ## Sprint 2 Feature: Reservation Requests
 
-The first complete feature is requesting a pickleball court reservation. A user can go to `/reservations`, fill out the form with their name, court, date, time, party size, and skill level, and submit it from the browser. The form uses `fetch` to post to the server, the server validates the fields, saves the request in `reservations.json`, and the saved request appears in the current reservations list.
+The first complete feature is requesting a pickleball court reservation. After signing in, a user can go to `/reservations`, fill out the form with their name, court, date, time, party size, and skill level, and submit it from the browser. Express passes the request through the controller and service validation before the MongoDB repository saves it. The saved request then appears in the current reservations list.
 
 To exercise it:
 
 1. Run the app with `npm start`.
-2. Open `http://localhost:3000/reservations`.
-3. Fill out every field in the reservation form.
-4. Submit the form.
-5. Confirm the new reservation appears under "Current reservations."
-6. Refresh the page and confirm the reservation is still there.
+2. Sign up or log in.
+3. Open `http://localhost:3000/reservations`.
+4. Fill out every field in the reservation form.
+5. Submit the form.
+6. Confirm the new reservation appears under "Current reservations."
+7. Refresh the page and confirm the reservation is still there.
 
 If required fields are missing, the service returns a validation error and the page shows which fields need to be fixed.
 
@@ -187,13 +231,17 @@ curl 'http://localhost:3000/health'
 
 Sprint 5 has no new features. A real clean-clone test was done, cloning the repository into a fresh directory and following this README exactly as written, and fixed what errors were found:
 
-- The README's MongoDB step didn't say how to start it. It now includes a line Docker command, with a note that it can be skipped if MongoDB is already running locally.
+- The README's MongoDB step did not say how to start it. It now includes first-run and repeat Docker commands, with a note that it can be skipped if MongoDB is already running locally.
 
 - Added a note that this project has no seed script, since reservations are only created through the signup and reservation forms, and admin accounts come from `npm run admin:create`.
 
-- The Cancel button used to show on every reservation, even ones you didn't own. Clicking it correctly failed with a 403 on the backend, but nothing told the user why, it just silently did nothing. The button is now hidden entirely unless you own the reservation or are an admin.
+- The Cancel button used to show on every reservation, even ones the current user did not own. Clicking it correctly failed with a 403 on the backend, but nothing told the user why. The button is now hidden unless the current user owns the reservation or is an admin.
 
-- The home, courts, and players pages were still raw unstyled HTML sent directly from the controller, left over from before the Tailwind pass . They're now real EJS views styled to match the rest of the app.
+- The home, courts, and players pages were still raw unstyled HTML sent directly from the controller, left over from before the Tailwind pass. They are now EJS views styled to match the rest of the app.
+
+- The shared header used to announce Reservations as the current page everywhere. It now exposes `aria-current="page"` only on the active Courts, Reservations, or Players link.
+
+- Reservation errors are now associated with their fields, malformed direct requests are rejected by the service, cancellation focus is covered by Playwright, and the committed Tailwind stylesheet has been rebuilt from the final views.
 
 To verify: clone the repository fresh into a new directory, follow the Running Locally steps above exactly as written, and confirm the app starts, the full reservation flow works, and `npm test` passes with no changes needed beyond what the README says.
 
@@ -201,6 +249,16 @@ To verify: clone the repository fresh into a new directory, follow the Running L
 
 ```text
 Browser
+  |
+  v
+app.js
+  | Helmet security headers, static assets, body parsers
+  | express-session signed cookie
+  +-------------------------------> connect-mongo -> MongoDB sessions collection
+  |
+  +-- GET /, /courts, or /players
+  |     v
+  |   routes/pageRoutes.js -> controllers/pageController.js -> EJS views
   |
   +-- GET/POST /signup or /login
   |     |
@@ -217,9 +275,7 @@ Browser
   |     |     v
   |     |   User model -> MongoDB users collection
   |     |
-  |     +-- express-session signed cookie
-  |           v
-  |         connect-mongo -> MongoDB sessions collection
+  |     +-- successful auth regenerates and saves the session
   |
   +-- npm run admin:create
   |     | server-only admin provisioning (no public route)
