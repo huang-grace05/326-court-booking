@@ -6,6 +6,14 @@ import {
   deleteReservation,
 } from "../repositories/reservationRepository.js";
 
+const COURT_NAMES = new Set([
+  "North Court",
+  "South Court",
+  "Community Center Court",
+]);
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_PATTERN = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+
 export class ReservationValidationError extends Error {
   constructor(errors) {
     super("Please fill out the required reservation fields.");
@@ -86,18 +94,26 @@ function validateReservation(input) {
 
   if (!input.playerName) {
     errors.playerName = "Name is required.";
+  } else if (input.playerName.length > 100) {
+    errors.playerName = "Name must be 100 characters or fewer.";
   }
 
   if (!input.courtName) {
     errors.courtName = "Court is required.";
+  } else if (!COURT_NAMES.has(input.courtName)) {
+    errors.courtName = "Choose one of the listed courts.";
   }
 
   if (!input.reservationDate) {
     errors.reservationDate = "Date is required.";
+  } else if (!isValidDate(input.reservationDate)) {
+    errors.reservationDate = "Enter a valid date.";
   }
 
   if (!input.reservationTime) {
     errors.reservationTime = "Time is required.";
+  } else if (!TIME_PATTERN.test(input.reservationTime)) {
+    errors.reservationTime = "Enter a valid time.";
   }
 
   if (!input.partySize) {
@@ -119,4 +135,19 @@ function validateReservation(input) {
   }
 
   return errors;
+}
+
+function isValidDate(value) {
+  if (!DATE_PATTERN.test(value)) {
+    return false;
+  }
+
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
 }

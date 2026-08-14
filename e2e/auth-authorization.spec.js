@@ -80,6 +80,9 @@ test("member ownership and server-provisioned admin work in a real browser", asy
   const otherMemberReservation = page
     .locator(".reservation-item")
     .filter({ hasText: "Owner Member" });
+  await expect(
+    otherMemberReservation.getByRole("button", { name: "Cancel" }),
+  ).toHaveCount(0);
   const reservationId = await otherMemberReservation.getAttribute(
     "data-reservation-id",
   );
@@ -111,6 +114,9 @@ test("member ownership and server-provisioned admin work in a real browser", asy
   await adminReservation.getByRole("button", { name: "Cancel" }).click();
   expect((await deleteResponse).status()).toBe(200);
   await expect(adminReservation).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Current reservations" }),
+  ).toBeFocused();
 
   expect(consoleProblems).toEqual([]);
 });
